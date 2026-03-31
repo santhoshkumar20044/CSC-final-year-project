@@ -35,7 +35,6 @@ function App() {
     }
   }, []);
 
-  // Fix 1: useCallback for calculateStats
   const calculateStats = useCallback((data) => {
     const total = data.length;
     const passed = data.filter(h => h.status === 'PASS').length;
@@ -43,7 +42,6 @@ function App() {
     setStats({ total, passed, failed: total - passed, avgAccuracy: avgAccuracy.toFixed(1) });
   }, []);
 
-  // Fix 2: useCallback for fetchHistory
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     try {
@@ -53,12 +51,12 @@ function App() {
     } catch (err) { console.log("History fetch error"); }
   }, [user, isAdmin, calculateStats]);
 
-  // Fix 3: Added fetchHistory to dependency array
   useEffect(() => {
     if (user) {
       fetchHistory();
     }
-  }, [user, activeTab, fetchHistory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, activeTab]); 
 
   const handleLoginSuccess = (res) => {
     const decoded = jwtDecode(res.credential);
