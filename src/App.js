@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
@@ -8,9 +8,8 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Render Backend URL
 const BACKEND_URL = "https://csc-final-year-project.onrender.com";
-const GOOGLE_CLIENT_ID = "930915758489-olls4fvou2r2fet2ou683hti5jfb4qd.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "930915758489-olls4fvou2r2fet2eou683hti5jfb4qd.apps.googleusercontent.com";
 const ADMIN_EMAIL = "santhoshwebworker@gmail.com";
 
 function App() {
@@ -36,27 +35,27 @@ function App() {
     }
   }, []);
 
-  const calculateStats = (data) => {
+  const calculateStats = useCallback((data) => {
     const total = data.length;
     const passed = data.filter(h => h.status === 'PASS').length;
     const avgAccuracy = total > 0 ? data.reduce((sum, h) => sum + h.score, 0) / total : 0;
     setStats({ total, passed, failed: total - passed, avgAccuracy: avgAccuracy.toFixed(1) });
-  };
+  }, []);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     if (!user) return;
     try {
       const response = await axios.get(`${BACKEND_URL}/history?email=${user.email}&is_admin=${isAdmin}`);
       setScanHistory(response.data);
       calculateStats(response.data);
     } catch (err) { console.log("History fetch error"); }
-  };
+  }, [user, isAdmin, calculateStats]);
 
   useEffect(() => {
     if (user) {
       fetchHistory();
     }
-  }, [user, activeTab]);
+  }, [user, activeTab, fetchHistory]); // Added fetchHistory as dependency
 
   const handleLoginSuccess = (res) => {
     const decoded = jwtDecode(res.credential);
@@ -90,6 +89,18 @@ function App() {
   const filteredHistory = scanHistory.filter(item => 
     item.user_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.filename.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Styles and Render logic remains the same...
+  const SideBtn = ({active, onClick, icon, label}) => (
+    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%', padding: '15px', border: 'none', borderRadius: '12px', background: active ? '#3b82f6' : 'transparent', color: active ? '#fff' : '#64748b', cursor: 'pointer', fontWeight: '600', marginBottom: '5px' }}>{icon} {label}</button>
+  );
+
+  const StatBox = ({label, val, icon}) => (
+    <div style={{...styles.statBox, background:'#0f172a', border:'1px solid #1e293b'}}>
+      <div style={styles.statIcon}>{icon}</div>
+      <div><p style={{margin:0, color:'#64748b', fontSize:'0.75rem'}}>{label}</p><h2 style={{margin:0, fontSize:'1.2rem', color:'#fff'}}>{val}</h2></div>
+    </div>
   );
 
   if (view === 'landing') {
@@ -226,17 +237,6 @@ function App() {
     </div>
   );
 }
-
-const SideBtn = ({active, onClick, icon, label}) => (
-  <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%', padding: '15px', border: 'none', borderRadius: '12px', background: active ? '#3b82f6' : 'transparent', color: active ? '#fff' : '#64748b', cursor: 'pointer', fontWeight: '600', marginBottom: '5px' }}>{icon} {label}</button>
-);
-
-const StatBox = ({label, val, icon}) => (
-  <div style={{...styles.statBox, background:'#0f172a', border:'1px solid #1e293b'}}>
-    <div style={styles.statIcon}>{icon}</div>
-    <div><p style={{margin:0, color:'#64748b', fontSize:'0.75rem'}}>{label}</p><h2 style={{margin:0, fontSize:'1.2rem', color:'#fff'}}>{val}</h2></div>
-  </div>
-);
 
 const styles = {
   landingWrapper: { minHeight: '100vh', padding: '0 5%', fontFamily: 'Inter, sans-serif' },
