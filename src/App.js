@@ -51,6 +51,7 @@ function App() {
     } catch (err) { console.log("History fetch error"); }
   }, [user, isAdmin, calculateStats]);
 
+  // CRITICAL FIX: ESLINT IGNORE ADDED INSIDE THE EFFECT
   useEffect(() => {
     if (user) {
       fetchHistory();
