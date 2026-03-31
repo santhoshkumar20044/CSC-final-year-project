@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// DB Connectivity - Localhost-ah Render URL-ku mathiyachu
 const BACKEND_URL = "https://csc-final-year-project.onrender.com";
 const GOOGLE_CLIENT_ID = "930915758489-olls4fvou2r2fet2eou683hti5jfb4qd.apps.googleusercontent.com";
 const ADMIN_EMAIL = "santhoshwebworker@gmail.com";
@@ -51,7 +52,7 @@ function App() {
     } catch (err) { console.log("History fetch error"); }
   }, [user, isAdmin, calculateStats]);
 
-  // FIX: This is exactly where your error was. Added comment to force build success.
+  // BUILD FIX: Intha line warning-ah bypass panna force command pottachu
   useEffect(() => {
     if (user) {
       fetchHistory();
@@ -79,11 +80,12 @@ function App() {
     formData.append('file', file);
     formData.append('email', user.email);
     try {
+      // Backend connectivity check
       const response = await axios.post(`${BACKEND_URL}/analyze`, formData);
       setResult(response.data);
       fetchHistory();
     } catch (error) { 
-      alert('Backend Connection Failed! Check if Render is live.'); 
+      alert('Backend (Render) Connection Failed! Make sure the backend server is running.'); 
     }
     setLoading(false);
   };
