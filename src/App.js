@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Render Backend URL
+const BACKEND_URL = "https://csc-final-year-project.onrender.com";
 const GOOGLE_CLIENT_ID = "930915758489-olls4fvou2r2fet2eou683hti5jfb4qd.apps.googleusercontent.com";
 const ADMIN_EMAIL = "santhoshwebworker@gmail.com";
 
@@ -44,7 +46,8 @@ function App() {
   const fetchHistory = async () => {
     if (!user) return;
     try {
-      const response = await axios.get(`http://localhost:8000/history?email=${user.email}&is_admin=${isAdmin}`);
+      // Updated with Render URL
+      const response = await axios.get(`${BACKEND_URL}/history?email=${user.email}&is_admin=${isAdmin}`);
       setScanHistory(response.data);
       calculateStats(response.data);
     } catch (err) { console.log("History fetch error"); }
@@ -54,7 +57,6 @@ function App() {
     if (user) {
       fetchHistory();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, activeTab]);
 
   const handleLoginSuccess = (res) => {
@@ -77,10 +79,13 @@ function App() {
     formData.append('file', file);
     formData.append('email', user.email);
     try {
-      const response = await axios.post('http://localhost:8000/analyze', formData);
+      // Updated with Render URL
+      const response = await axios.post(`${BACKEND_URL}/analyze`, formData);
       setResult(response.data);
       fetchHistory();
-    } catch (error) { alert('Backend Connection Failed!'); }
+    } catch (error) { 
+      alert('Backend Connection Failed! Check if Render is live.'); 
+    }
     setLoading(false);
   };
 
