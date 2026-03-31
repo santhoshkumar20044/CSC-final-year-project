@@ -10,7 +10,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 // Render Backend URL
 const BACKEND_URL = "https://csc-final-year-project.onrender.com";
-const GOOGLE_CLIENT_ID = "930915758489-olls4fvou2r2fet2eou683hti5jfb4qd.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "930915758489-olls4fvou2r2fet2ou683hti5jfb4qd.apps.googleusercontent.com";
 const ADMIN_EMAIL = "santhoshwebworker@gmail.com";
 
 function App() {
@@ -46,7 +46,6 @@ function App() {
   const fetchHistory = async () => {
     if (!user) return;
     try {
-      // Updated with Render URL
       const response = await axios.get(`${BACKEND_URL}/history?email=${user.email}&is_admin=${isAdmin}`);
       setScanHistory(response.data);
       calculateStats(response.data);
@@ -79,7 +78,6 @@ function App() {
     formData.append('file', file);
     formData.append('email', user.email);
     try {
-      // Updated with Render URL
       const response = await axios.post(`${BACKEND_URL}/analyze`, formData);
       setResult(response.data);
       fetchHistory();
