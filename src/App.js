@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
@@ -35,6 +35,7 @@ function App() {
     }
   }, []);
 
+  // Fix 1: useCallback for calculateStats
   const calculateStats = useCallback((data) => {
     const total = data.length;
     const passed = data.filter(h => h.status === 'PASS').length;
@@ -42,6 +43,7 @@ function App() {
     setStats({ total, passed, failed: total - passed, avgAccuracy: avgAccuracy.toFixed(1) });
   }, []);
 
+  // Fix 2: useCallback for fetchHistory
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     try {
@@ -51,11 +53,12 @@ function App() {
     } catch (err) { console.log("History fetch error"); }
   }, [user, isAdmin, calculateStats]);
 
+  // Fix 3: Added fetchHistory to dependency array
   useEffect(() => {
     if (user) {
       fetchHistory();
     }
-  }, [user, activeTab, fetchHistory]); // Added fetchHistory as dependency
+  }, [user, activeTab, fetchHistory]);
 
   const handleLoginSuccess = (res) => {
     const decoded = jwtDecode(res.credential);
@@ -91,7 +94,6 @@ function App() {
     item.filename.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Styles and Render logic remains the same...
   const SideBtn = ({active, onClick, icon, label}) => (
     <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%', padding: '15px', border: 'none', borderRadius: '12px', background: active ? '#3b82f6' : 'transparent', color: active ? '#fff' : '#64748b', cursor: 'pointer', fontWeight: '600', marginBottom: '5px' }}>{icon} {label}</button>
   );
