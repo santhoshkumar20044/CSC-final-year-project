@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker  # Updated import for 2.0
+from sqlalchemy.orm import declarative_base, sessionmaker
 import numpy as np
 import cv2
 import io
@@ -9,14 +9,16 @@ import datetime
 from PIL import Image
 import base64
 import uvicorn
+import os
 
 # --- 1. DATABASE SETUP (SQLite) ---
 DATABASE_URL = "sqlite:///./textile_project.db"
 
-# FIX: Added timeout and check_same_thread to prevent "database is locked" errors
+# FIX: Added timeout and pool_pre_ping to prevent "database is locked" errors
 engine = create_engine(
     DATABASE_URL, 
-    connect_args={"check_same_thread": False, "timeout": 30}
+    connect_args={"check_same_thread": False, "timeout": 30},
+    pool_pre_ping=True
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -45,6 +47,7 @@ Base.metadata.create_all(bind=engine)
 # --- 2. FASTAPI APP SETUP ---
 app = FastAPI()
 
+# CORS: All origins allowed for easy hosting connection
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -55,7 +58,7 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-    return {"message": "TexScan Pro Advanced Backend is Running!"}
+    return {"message": "TexScan Pro API is Live!", "status": "Healthy"}
 
 # --- 3. CORE AI ANALYSIS ENDPOINT ---
 @app.post("/analyze")
@@ -70,9 +73,9 @@ async def analyze_fabric(
         image = Image.open(io.BytesIO(contents)).convert("RGB")
         img_array = np.array(image)
 
-        # Logic based on filename
+        # Logic based on filename (Simulation)
         filename = file.filename.lower()
-        if "good" in filename or "clean" in filename:
+        if any(word in filename for word in ["good", "clean", "pass"]):
             status = "PASS"
             score = np.random.uniform(96.8, 99.9)
             msg = "No defects detected. Fabric quality meets ISO standards."
@@ -106,21 +109,22 @@ async def analyze_fabric(
             "heatmap": heatmap_base64
         }
     except Exception as e:
-        db.rollback() # Error vantha database-ah palaya nilaiku kondu pogum
+        db.rollback() 
         print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Database error occurred.")
+        raise HTTPException(status_code=500, detail="Database or Analysis error.")
     finally:
-        db.close() # Kandippa session-ah close panniduvom
+        db.close() # CRITICAL: This prevents "Database is locked"
 
-# --- 4. HISTORY & REPORTS ENDPOINT ---
+# --- 4. HISTORY ENDPOINT ---
 @app.get("/history")
 async def get_history(
     email: str = Query(...), 
-    is_admin: bool = Query(False)
+    is_admin: str = Query("false")
 ):
     db = SessionLocal()
     try:
-        if is_admin:
+        admin_bool = is_admin.lower() == "true"
+        if admin_bool:
             records = db.query(ScanHistory).order_by(ScanHistory.timestamp.desc()).all()
         else:
             records = db.query(ScanHistory).filter(ScanHistory.user_email == email).order_by(ScanHistory.timestamp.desc()).all()
@@ -128,5 +132,8 @@ async def get_history(
     finally:
         db.close()
 
+# --- 5. START COMMAND FOR HOSTING ---
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Get port from Render/Environment or default to 8000
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
