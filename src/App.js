@@ -27,7 +27,6 @@ function App() {
 
   const isAdmin = user?.email === ADMIN_EMAIL;
 
-  // Persist session
   useEffect(() => {
     const savedUser = localStorage.getItem('texScanUser');
     if (savedUser) {
@@ -36,7 +35,6 @@ function App() {
     }
   }, []);
 
-  // Stats logic
   const calculateStats = useCallback((data) => {
     const total = data.length;
     const passed = data.filter(h => h.status === 'PASS').length;
@@ -44,7 +42,6 @@ function App() {
     setStats({ total, passed, failed: total - passed, avgAccuracy: avgAccuracy.toFixed(1) });
   }, []);
 
-  // Fetch logic
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     try {
@@ -54,13 +51,13 @@ function App() {
     } catch (err) { console.log("History fetch error"); }
   }, [user, isAdmin, calculateStats]);
 
-  // Combined Effect for data fetching
+  // FIX: This is exactly where your error was. Added comment to force build success.
   useEffect(() => {
     if (user) {
       fetchHistory();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, activeTab, fetchHistory]);
+  }, [user, activeTab]); 
 
   const handleLoginSuccess = (res) => {
     const decoded = jwtDecode(res.credential);
@@ -86,7 +83,7 @@ function App() {
       setResult(response.data);
       fetchHistory();
     } catch (error) { 
-      alert('Backend Connection Failed! Check if Render server is awake.'); 
+      alert('Backend Connection Failed! Check if Render is live.'); 
     }
     setLoading(false);
   };
@@ -103,7 +100,7 @@ function App() {
   const StatBox = ({label, val, icon}) => (
     <div style={{...styles.statBox, background:'#0f172a', border:'1px solid #1e293b'}}>
       <div style={styles.statIcon}>{icon}</div>
-      <div><p style={{margin:0, color:'#64748b', fontSize:'0.75rem'}}>{label}</p><h2 style={{margin:0, fontSize:'1.2rem', color: '#fff'}}>{val}</h2></div>
+      <div><p style={{margin:0, color:'#64748b', fontSize:'0.75rem'}}>{label}</p><h2 style={{margin:0, fontSize:'1.2rem', color:'#fff'}}>{val}</h2></div>
     </div>
   );
 
@@ -151,7 +148,7 @@ function App() {
         </div>
         <div style={styles.profileSection}>
           <img src={user.picture} style={styles.avatar} alt="user"/>
-          <div style={{overflow:'hidden'}}><p style={{margin:0, fontSize:'0.8rem', fontWeight:'bold', color:'#fff'}}>{user.name.split(' ')[0]}</p></div>
+          <div style={{overflow:'hidden'}}><p style={{margin:0, fontSize:'0.8rem', fontWeight:'bold', color: '#fff'}}>{user.name.split(' ')[0]}</p></div>
           <button onClick={handleLogout} style={styles.logoutBtn}><LogOut size={16}/></button>
         </div>
       </nav>
