@@ -11,7 +11,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 // DB Connectivity - Localhost-ah Render URL-ku mathiyachu
 const BACKEND_URL = "https://csc-final-year-project.onrender.com";
 const GOOGLE_CLIENT_ID = "930915758489-ok5kpoihhvj5v84q4ek35eft2upck4qg.apps.googleusercontent.com";
-const ADMIN_EMAIL = "santhoshwebworker@gmail.com","e22cs003@shanmugha.edu.in";
+const ADMIN_EMAIL = "e22cs003@shanmugha.edu.in";
 
 function App() {
   const [view, setView] = useState('landing');
